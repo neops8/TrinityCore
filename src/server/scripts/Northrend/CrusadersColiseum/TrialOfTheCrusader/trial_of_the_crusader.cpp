@@ -105,8 +105,8 @@ Position const ToCCommonLoc[] =
     { 563.833008f, 195.244995f, 394.585561f, 0 }, //  5 - Center
     { 573.5f, 180.5f, 395.14f, 0 },               //  6 Move 0 Right
     { 553.5f, 180.5f, 395.14f, 0 },               //  7 Move 0 Left
-    { 573.0f, 170.0f, 395.14f, 0 },               //  8 Move 1 Right
-    { 555.5f, 170.0f, 395.14f, 0 },               //  9 Move 1 Left
+    { 573.0f, 170.0f, 400.5521f, 0 },             //  8 Move 1 Right
+    { 555.5f, 170.0f, 400.5521f, 0 },             //  9 Move 1 Left
     { 563.8f, 216.1f, 395.1f, 0 },                // 10 Behind the door
 
     { 575.042358f, 195.260727f, 395.137146f, 0 }, // 5
@@ -771,6 +771,7 @@ class npc_tirion_toc : public CreatureScript
                             if (Creature* lightbane = me->SummonCreature(NPC_FJOLA_LIGHTBANE, ToCSpawnLoc[1].GetPositionX(), ToCSpawnLoc[1].GetPositionY(), ToCSpawnLoc[1].GetPositionZ(), 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME))
                             {
                                 lightbane->SetVisible(false);
+                                lightbane->SetHover(true);
                                 lightbane->SetReactState(REACT_PASSIVE);
                                 lightbane->SummonCreature(NPC_LIGHT_ESSENCE, TwinValkyrsLoc[0].GetPositionX(), TwinValkyrsLoc[0].GetPositionY(), TwinValkyrsLoc[0].GetPositionZ());
                                 lightbane->SummonCreature(NPC_LIGHT_ESSENCE, TwinValkyrsLoc[1].GetPositionX(), TwinValkyrsLoc[1].GetPositionY(), TwinValkyrsLoc[1].GetPositionZ());
@@ -778,6 +779,7 @@ class npc_tirion_toc : public CreatureScript
                             if (Creature* darkbane = me->SummonCreature(NPC_EYDIS_DARKBANE, ToCSpawnLoc[2].GetPositionX(), ToCSpawnLoc[2].GetPositionY(), ToCSpawnLoc[2].GetPositionZ(), 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME))
                             {
                                 darkbane->SetVisible(false);
+                                darkbane->SetHover(true);
                                 darkbane->SetReactState(REACT_PASSIVE);
                                 darkbane->SummonCreature(NPC_DARK_ESSENCE, TwinValkyrsLoc[2].GetPositionX(), TwinValkyrsLoc[2].GetPositionY(), TwinValkyrsLoc[2].GetPositionZ());
                                 darkbane->SummonCreature(NPC_DARK_ESSENCE, TwinValkyrsLoc[3].GetPositionX(), TwinValkyrsLoc[3].GetPositionY(), TwinValkyrsLoc[3].GetPositionZ());
