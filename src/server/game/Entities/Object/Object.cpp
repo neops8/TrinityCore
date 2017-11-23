@@ -361,10 +361,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
             *data << object->GetPositionX();
             *data << object->GetPositionY();
-            if (isType(TYPEMASK_UNIT))
-                *data << unit->GetPositionZMinusOffset();
-            else
-                *data << object->GetPositionZ();
+            *data << object->GetPositionZ();
 
             if (transport)
             {
@@ -376,10 +373,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             {
                 *data << object->GetPositionX();
                 *data << object->GetPositionY();
-                if (isType(TYPEMASK_UNIT))
-                    *data << unit->GetPositionZMinusOffset();
-                else
-                    *data << object->GetPositionZ();
+                *data << object->GetPositionZ();
             }
 
             *data << object->GetOrientation();
@@ -1411,7 +1405,7 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z + 2.0f, true);
     if (new_z > INVALID_HEIGHT)
-        z = new_z + 0.05f;                                   // just to be sure that we are not a few pixel under the surface
+        z = new_z + (isType(TYPEMASK_UNIT) ? ToUnit()->GetHoverOffset() : 0.0f) + 0.05f; // just to be sure that we are not a few pixel under the surface
 }
 
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
@@ -1420,65 +1414,43 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
     if (GetTransport())
         return;
 
-    switch (GetTypeId())
+    if (Unit const* unit = ToUnit())
     {
-        case TYPEID_UNIT:
+        if (!unit->CanFly())
         {
-            // non fly unit don't must be in air
-            // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
-            if (!ToCreature()->CanFly())
-            {
-                bool canSwim = ToCreature()->CanSwim();
-                float ground_z = z;
-                float max_z = canSwim
-                    ? GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
-                    : ((ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true)));
-                if (max_z > INVALID_HEIGHT)
-                {
-                    if (z > max_z)
-                        z = max_z;
-                    else if (z < ground_z)
-                        z = ground_z;
-                }
-            }
+            bool canSwim = unit->CanSwim();
+            float ground_z = z;
+            float max_z;
+            if (canSwim)
+                max_z = GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, &ground_z, !unit->HasAuraType(SPELL_AURA_WATER_WALK));
             else
+                max_z = ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true);
+
+            if (max_z > INVALID_HEIGHT)
             {
-                float ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true);
-                if (z < ground_z)
+                // hovering units cannot go below their hover height
+                float hoverOffset = unit->GetHoverOffset();
+                max_z += hoverOffset;
+                ground_z += hoverOffset;
+
+                if (z > max_z)
+                    z = max_z;
+                else if (z < ground_z)
                     z = ground_z;
             }
-            break;
         }
-        case TYPEID_PLAYER:
+        else
         {
-            // for server controlled moves playr work same as creature (but it can always swim)
-            if (!ToPlayer()->CanFly())
-            {
-                float ground_z = z;
-                float max_z = GetMap()->GetWaterOrGroundLevel(GetPhaseMask(), x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
-                if (max_z > INVALID_HEIGHT)
-                {
-                    if (z > max_z)
-                        z = max_z;
-                    else if (z < ground_z)
-                        z = ground_z;
-                }
-            }
-            else
-            {
-                float ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true);
-                if (z < ground_z)
-                    z = ground_z;
-            }
-            break;
-        }
-        default:
-        {
-            float ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true);
-            if (ground_z > INVALID_HEIGHT)
+            float ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true) + unit->GetHoverOffset();
+            if (z < ground_z)
                 z = ground_z;
-            break;
         }
+    }
+    else
+    {
+        float ground_z = GetMap()->GetHeight(GetPhaseMask(), x, y, z, true);
+        if (ground_z > INVALID_HEIGHT)
+            z = ground_z;
     }
 }
 

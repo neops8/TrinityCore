@@ -578,7 +578,7 @@ bool Unit::IsWithinMeleeRange(Unit const* obj) const
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
-    float dz = GetPositionZMinusOffset() - obj->GetPositionZMinusOffset();
+    float dz = GetPositionZ() - obj->GetPositionZ();
     float distsq = dx*dx + dy*dy + dz*dz;
 
     float maxdist = GetMeleeRange(obj);
@@ -12287,15 +12287,6 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
     }
 }
 
-float Unit::GetPositionZMinusOffset() const
-{
-    float offset = 0.0f;
-    if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
-        offset = GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
-
-    return GetPositionZ() - offset;
-}
-
 void Unit::SetControlled(bool apply, UnitState state)
 {
     if (apply)
@@ -13856,7 +13847,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
-    Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
+    Unit::BuildMovementPacket(*this, m_movementInfo.transport.pos, m_movementInfo, data);
 }
 
 void Unit::BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data)
@@ -14317,7 +14308,7 @@ void Unit::SetFacingTo(float ori, bool force)
         return;
 
     Movement::MoveSplineInit init(this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), false);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
     if (HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && GetTransGUID())
         init.DisableTransportPathTransformations(); // It makes no sense to target global orientation
     init.SetFacing(ori);
@@ -14332,7 +14323,7 @@ void Unit::SetFacingToObject(WorldObject const* object, bool force)
 
     /// @todo figure out under what conditions creature will move towards object instead of facing it where it currently is.
     Movement::MoveSplineInit init(this);
-    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), false);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ(), false);
     init.SetFacing(GetAngle(object));   // when on transport, GetAngle will still return global coordinates (and angle) that needs transforming
     init.Launch();
 }
