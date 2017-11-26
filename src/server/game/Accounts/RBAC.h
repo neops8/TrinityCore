@@ -773,6 +773,7 @@ enum RBACPermissions
     RBAC_PERM_COMMAND_NPC_SHOWLOOT                           = 865,
     RBAC_PERM_COMMAND_LIST_SPAWNPOINTS                       = 866,
     RBAC_PERM_COMMAND_RELOAD_QUEST_GREETING_LOCALE           = 867,
+    RBAC_PERM_COMMAND_RELOAD_CREATURE_MOVEMENT_OVERRIDE      = 868,
 
     // custom permissions 1000+
     RBAC_PERM_MAX
